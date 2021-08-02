@@ -1,9 +1,8 @@
-package server;
-
 import config.GlobalConfig;
 import gui.GuiFrame;
+import server.ServerThread;
 
-public class ServerApp {
+public class ServerApplication {
 
     public static void main(String[] args) {
         GuiFrame guiFrame = new GuiFrame("ServerGui", GlobalConfig.GUI_SIZE);

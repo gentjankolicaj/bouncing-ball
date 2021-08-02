@@ -2,9 +2,9 @@ package client;
 
 import config.GlobalConfig;
 import gui.GuiFrame;
+import message.SocketMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import server.SocketMessage;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

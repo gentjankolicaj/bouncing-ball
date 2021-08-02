@@ -1,9 +1,8 @@
-package client;
-
+import client.ClientThread;
 import config.GlobalConfig;
 import gui.GuiFrame;
 
-public class ClientApp {
+public class ClientApplication {
 
     public static void main(String[] args) {
         GuiFrame guiFrame = new GuiFrame("ClientGui", GlobalConfig.GUI_SIZE);
