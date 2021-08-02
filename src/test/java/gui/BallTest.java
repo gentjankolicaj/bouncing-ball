@@ -19,4 +19,6 @@ class BallTest {
         Assertions.assertNotEquals(ball.getRandY(10), 0);
 
     }
+
+
 }

@@ -55,17 +55,17 @@ public class ServerThread extends Thread {
                     if (client != null && !client.isClosed()) {
                         SocketMessage writeSocketMessage = new SocketMessage("Ball", guiFrame.getBallPosition());
                         boolean sentMessage = sendSocketMessage(client, writeSocketMessage);
-                        LOGGER.info("Message sent : " + writeSocketMessage);
+                        LOGGER.info("To client : " + writeSocketMessage);
                         if (sentMessage) {
                             SocketMessage readSocketMessage = awaitSocketMessage(client);
                             if (readSocketMessage == null)
-                                throw new RuntimeException("Message received null ");
+                                throw new RuntimeException("From client message is null ");
 
                             inScope = true;
                             guiFrame.setBallPosition(readSocketMessage);
 
                         } else
-                            throw new RuntimeException("Message not sent to socket " + client);
+                            throw new RuntimeException("Message not sent to client " + client);
                     }
                 }
             }

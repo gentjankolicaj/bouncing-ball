@@ -40,7 +40,6 @@ public class ClientThread extends Thread {
                 guiFrame.setBallPosition(socketMessage);
                 shapeInScope = true;
                 receivedMessage = true;
-                LOGGER.debug("shapeInScope & receivedMessage set to " + shapeInScope + "," + receivedMessage);
             }
 
             if (shapeInScope) {
@@ -55,7 +54,7 @@ public class ClientThread extends Thread {
                     //send last coordinate message to server
                     SocketMessage socketMessage = new SocketMessage("Ball", guiFrame.getBallPosition());
                     boolean sentMessage = customSocketClient.sendSocketMessage(socketMessage);
-                    LOGGER.info("Position sent to server " + sentMessage + ", " + socketMessage);
+                    LOGGER.info("To server " + sentMessage + ", " + socketMessage);
                 }
             }
 
@@ -79,7 +78,7 @@ public class ClientThread extends Thread {
         public void start() {
             try {
                 socket = new Socket(GlobalConfig.HOSTNAME, GlobalConfig.PORT);
-                System.out.println("Client socket : " + socket);
+                LOGGER.info("Connected : " + socket);
             } catch (Exception e) {
                 e.printStackTrace();
             }

@@ -63,8 +63,6 @@ public class Ball {
 
         graphics2D.setColor(Color.BLACK);
         graphics2D.fill(circle);
-
-        System.out.println("Ball{x=" + x + ", y=" + y + "}");
     }
 
     public boolean isVisible() {
@@ -94,9 +92,9 @@ public class Ball {
         }
 
         if (inScope)
-            LOGGER.info("Shape moved " + this);
+            LOGGER.info("Moved " + this);
         else
-            LOGGER.info("Shape not-moved " + this);
+            LOGGER.info("Not-moved " + this);
 
         return inScope;
     }
