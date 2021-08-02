@@ -3,15 +3,19 @@ package gui;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import server.SocketMessage;
+import util.FileUtil;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 
 public class Ball {
     private static final Logger LOGGER = LoggerFactory.getLogger(Ball.class);
-    private final int width = 20;
-    private final int height = 20;
+    private final int width = 70;
+    private final int height = 70;
 
     private final int dx = 2;
 
@@ -22,11 +26,17 @@ public class Ball {
     private int y = 0 - height;
 
     private boolean inScope;
+    private BufferedImage img;
 
     public Ball(Dimension frameDimension) {
         super();
         this.frameDimension = frameDimension;
         this.RAND_INTERVAL = frameDimension.height / 64;
+        try {
+            this.img = ImageIO.read(FileUtil.getResource("70.png"));
+        } catch (IOException ioException) {
+
+        }
     }
 
     public void setInitPosition(int x, int y) {
@@ -59,10 +69,13 @@ public class Ball {
 
     public void draw(Graphics g) {
         Graphics2D graphics2D = (Graphics2D) g;
-        Ellipse2D.Double circle = new Ellipse2D.Double(x, y, width, height);
-
-        graphics2D.setColor(Color.BLACK);
-        graphics2D.fill(circle);
+        if (img == null) {
+            Ellipse2D.Double circle = new Ellipse2D.Double(x, y, width, height);
+            graphics2D.setColor(Color.RED);
+            graphics2D.fill(circle);
+        } else {
+            graphics2D.drawImage(img, x, y, null);
+        }
     }
 
     public boolean isVisible() {
