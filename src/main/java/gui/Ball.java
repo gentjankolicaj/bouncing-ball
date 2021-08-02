@@ -1,9 +1,9 @@
 package gui;
 
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import server.SocketMessage;
-import util.FileUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -31,9 +31,9 @@ public class Ball {
     public Ball(Dimension frameDimension) {
         super();
         this.frameDimension = frameDimension;
-        this.RAND_INTERVAL = frameDimension.height / 64;
+        this.RAND_INTERVAL = frameDimension.height / 50;
         try {
-            this.img = ImageIO.read(FileUtil.getResource("70.png"));
+            this.img = ImageIO.read(getClass().getClassLoader().getResourceAsStream("70.png"));
         } catch (IOException ioException) {
 
         }

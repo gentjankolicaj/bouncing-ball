@@ -59,7 +59,7 @@ public class ClientThread extends Thread {
             }
 
             try {
-                Thread.sleep(GlobalConfig.THREAD_SLEEP);
+                Thread.sleep(GlobalConfig.GUI_THREAD_SLEEP);
             } catch (InterruptedException ie) {
                 ie.printStackTrace();
             }
@@ -80,6 +80,7 @@ public class ClientThread extends Thread {
                 socket = new Socket(GlobalConfig.HOSTNAME, GlobalConfig.PORT);
                 LOGGER.info("Connected : " + socket);
             } catch (Exception e) {
+                System.exit(0);
                 e.printStackTrace();
             }
 
@@ -99,8 +100,10 @@ public class ClientThread extends Thread {
                     }
                 }
             } catch (IOException io) {
+                System.exit(0);
                 io.printStackTrace();
             } catch (ClassNotFoundException ce) {
+                System.exit(0);
                 ce.printStackTrace();
             }
             return socketMessage;

@@ -10,6 +10,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +36,9 @@ public class ServerThread extends Thread {
         //Start server socket & manage new incoming clients
         startServer();
 
+        //Start socket manager to manage new sockets
+        new SocketManager().start();
+
         int clientSocketIndex = 0;
         int clientSocketNumber = socketClients.size();
         Socket client = null;
@@ -49,10 +54,17 @@ public class ServerThread extends Thread {
                     inScope = false;
 
                     client = socketClients.get(clientSocketIndex);
-                    if (clientSocketNumber != 1)
+                    clientSocketNumber = socketClients.size();
+                    if (clientSocketNumber != 1) {
                         clientSocketIndex++;
 
+                        //Protection for upcoming loop client index
+                        //Set to 0 if maximum is reached
+                        clientSocketIndex = clientSocketIndex >= clientSocketNumber ? 0 : clientSocketIndex;
+                    }
+
                     if (client != null && !client.isClosed()) {
+
                         SocketMessage writeSocketMessage = new SocketMessage("Ball", guiFrame.getBallPosition());
                         boolean sentMessage = sendSocketMessage(client, writeSocketMessage);
                         LOGGER.info("To client : " + writeSocketMessage);
@@ -71,7 +83,7 @@ public class ServerThread extends Thread {
             }
 
             try {
-                Thread.sleep(GlobalConfig.THREAD_SLEEP);
+                Thread.sleep(GlobalConfig.GUI_THREAD_SLEEP);
             } catch (InterruptedException ie) {
                 ie.printStackTrace();
             }
@@ -84,8 +96,10 @@ public class ServerThread extends Thread {
     public void startServer() {
         try {
             serverSocket = new ServerSocket(GlobalConfig.PORT);
+
+            //Accept new socket client;
             Socket client = serverSocket.accept();
-            LOGGER.info("-->Found new " + client);
+            LOGGER.info("INITIAL--> New socket : " + client);
 
             socketClients.add(client);
         } catch (Exception e) {
@@ -137,26 +151,61 @@ public class ServerThread extends Thread {
     }
 
 
-    class ClientManager extends Thread {
-        private final Logger LOGGER = LoggerFactory.getLogger(ClientManager.class);
+    class SocketManager extends Thread {
+        private final Logger LOGGER = LoggerFactory.getLogger(SocketManager.class);
 
-        public ClientManager() {
+        public SocketManager() {
             super();
-            this.setName("ClientManager");
+            this.setName("SocketManager");
         }
 
         public void run() {
-            while (true) {
-                try {
-                    synchronized (serverSocket) {
+            LOGGER.info("Started socket manager.");
+            try {
+                //Set socket accept timeout
+                synchronized (serverSocket) {
+                    serverSocket.setSoTimeout(GlobalConfig.SERVER_SOCKET_TIMEOUT);
+                    LOGGER.info("ServerSocket timeout set : " + GlobalConfig.SERVER_SOCKET_TIMEOUT);
+                }
 
+            } catch (SocketException e) {
+                e.printStackTrace();
+            }
+
+            while (true) {
+
+                try {
+                    //Synchronize of intrinsic lock
+                    synchronized (serverSocket) {
+                        Socket newSocket = serverSocket.accept();
+
+                        //Synchronize of intrinsic lock
+                        synchronized (socketClients) {
+
+                            //clean from null & closed sockets
+                            for (int i = 0; i < socketClients.size(); i++) {
+                                Socket tmp = socketClients.get(i);
+                                if (tmp == null || tmp.isClosed()) {
+                                    socketClients.remove(i);
+                                }
+                            }
+                            //add new socket
+                            socketClients.add(newSocket);
+                            LOGGER.info("CLIENT_MANAGER--> New socket " + newSocket);
+                        }
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
+
+                    //Sleep before try to get again intrinsic lock
+                    Thread.sleep(GlobalConfig.SOCKET_MANAGER_THREAD_SLEEP);
+                } catch (SocketTimeoutException se) {
+                    LOGGER.error(se.getMessage());
+                } catch (InterruptedException ie) {
+                    LOGGER.error(ie.getMessage());
+                } catch (IOException io) {
+                    LOGGER.error(io.getMessage());
                 }
             }
         }
-
     }
 
 }
