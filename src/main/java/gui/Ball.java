@@ -1,10 +1,15 @@
 package gui;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import server.SocketMessage;
+
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 
 public class Ball {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Ball.class);
     private final int width = 20;
     private final int height = 20;
 
@@ -12,17 +17,28 @@ public class Ball {
 
     private final int RAND_INTERVAL;
     private final Dimension frameDimension;
-    private int x;
-    private int y;
+
+    private int x = 0 - width;
+    private int y = 0 - height;
+
     private boolean inScope;
 
     public Ball(Dimension frameDimension) {
         super();
         this.frameDimension = frameDimension;
+        this.RAND_INTERVAL = frameDimension.height / 64;
+    }
 
+    public void setInitPosition(int x, int y) {
+        this.x = x;
+        this.y = y;
         this.inScope = true;
-        this.RAND_INTERVAL = frameDimension.height / 32;
-        this.y = frameDimension.height / 2;
+    }
+
+    public void setInitPosition(SocketMessage socketMessage) {
+        this.x = frameDimension.width - socketMessage.getX();
+        this.y = socketMessage.getY();
+        this.inScope = true;
     }
 
     public int getX() {
@@ -56,7 +72,7 @@ public class Ball {
         return rectangle2D.contains(x, y, width, height);
     }
 
-    public void move() {
+    public boolean move() {
         if (inScope) {
             BallPosition ballPosition = getBallPosition(x + dx, getRandY(y), frameDimension);
             if (ballPosition.equals(BallPosition.INSIDE)) {
@@ -75,13 +91,14 @@ public class Ball {
             } else {
                 inScope = false;
             }
-
-        } else {
-            x = 0;
-            y = frameDimension.height / 2;
-            inScope = true;
         }
 
+        if (inScope)
+            LOGGER.info("Shape moved " + this);
+        else
+            LOGGER.info("Shape not-moved " + this);
+
+        return inScope;
     }
 
     private BallPosition getBallPosition(int x, int y, Dimension frameDimension) {
@@ -118,4 +135,14 @@ public class Ball {
         }
     }
 
+
+    @Override
+    public String toString() {
+        return "Ball{" +
+                "width=" + width +
+                ", height=" + height +
+                ", x=" + x +
+                ", y=" + y +
+                '}';
+    }
 }

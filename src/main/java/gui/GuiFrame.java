@@ -1,5 +1,7 @@
 package gui;
 
+import server.SocketMessage;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -37,8 +39,23 @@ public class GuiFrame extends AbstractFrame {
         mainFrame.repaint();
     }
 
-    public void moveBall() {
-        mainPanel.ball.move();
+    public boolean moveBall() {
+        return mainPanel.ball.move();
+    }
+
+    public void setBallPosition(int x, int y) {
+        this.mainPanel.ball.setInitPosition(x, y);
+    }
+
+    public int[] getBallPosition() {
+        int[] pos = new int[2];
+        pos[0] = mainPanel.ball.getX();
+        pos[1] = mainPanel.ball.getY();
+        return pos;
+    }
+
+    public void setBallPosition(SocketMessage socketMessage) {
+        this.mainPanel.ball.setInitPosition(socketMessage);
     }
 
     class MainPanel extends JPanel {
@@ -59,4 +76,6 @@ public class GuiFrame extends AbstractFrame {
         }
 
     }
+
+
 }
