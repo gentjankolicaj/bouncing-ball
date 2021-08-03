@@ -24,6 +24,7 @@ public class ClientThread extends Thread {
         super();
         this.guiFrame = guiFrame;
         this.customSocketClient = new CustomSocketClient();
+        this.setName("MOTION-THREAD");
     }
 
     public void run() {
@@ -83,7 +84,6 @@ public class ClientThread extends Thread {
                 System.exit(0);
                 e.printStackTrace();
             }
-
         }
 
 

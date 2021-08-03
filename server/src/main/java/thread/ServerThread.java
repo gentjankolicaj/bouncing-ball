@@ -29,6 +29,7 @@ public class ServerThread extends Thread {
         super();
         this.guiFrame = guiFrame;
         this.socketClients = new ArrayList<>();
+        this.setName("MOTION-THREAD");
     }
 
 
