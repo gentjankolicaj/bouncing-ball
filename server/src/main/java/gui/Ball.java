@@ -12,6 +12,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
+
 public class Ball {
     private static final Logger LOGGER = LoggerFactory.getLogger(Ball.class);
     private final int width = 70;
@@ -46,8 +47,8 @@ public class Ball {
     }
 
     public void setInitPosition(SocketMessage socketMessage) {
-        this.x = frameDimension.width - socketMessage.getX();
-        this.y = socketMessage.getY();
+        this.x = getInitX(socketMessage);
+        this.y = setInitY(socketMessage);
         this.inScope = true;
     }
 
@@ -65,6 +66,19 @@ public class Ball {
 
     public void setY(int y) {
         this.y = y;
+    }
+
+    private int getInitX(SocketMessage socketMessage) {
+        return frameDimension.width - socketMessage.getX();
+    }
+
+    private int setInitY(SocketMessage socketMessage) {
+        if (socketMessage.getY() > frameDimension.height)
+            return frameDimension.height;
+        if (socketMessage.getY() < 0)
+            return 0;
+        else
+            return socketMessage.getY();
     }
 
     public void draw(Graphics g) {

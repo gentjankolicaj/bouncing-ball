@@ -23,8 +23,6 @@ public class ServerThread extends Thread {
     protected ServerSocket serverSocket;
     protected List<Socket> socketClients;
 
-    private boolean inScope;
-
     public ServerThread(GuiFrame guiFrame) {
         super();
         this.guiFrame = guiFrame;
@@ -41,48 +39,56 @@ public class ServerThread extends Thread {
         //Start socket manager to manage new sockets
         new SocketManager().start();
 
+        Socket clientSocket = null;
         int clientSocketIndex = 0;
         int clientSocketNumber = socketClients.size();
-        Socket client = null;
 
         guiFrame.setBallPosition(0, 150);
-        inScope = true;
+        boolean inScope = true;
+
+        int emptyAttemptCounter = 0;
+        int emptyAttemptMax = 100;
 
         while (clientSocketNumber > 0) {
+
             if (inScope) {
-                boolean isMoved = guiFrame.moveBall();
+                inScope = guiFrame.moveBall();
                 guiFrame.repaintFrame();
-                if (!isMoved) {
-                    inScope = false;
 
-                    client = socketClients.get(clientSocketIndex);
-                    clientSocketNumber = socketClients.size();
-                    if (clientSocketNumber != 1) {
-                        clientSocketIndex++;
+            }
+            if (!inScope) {
+                clientSocket = socketClients.get(clientSocketIndex);
+                clientSocketNumber = socketClients.size();
+                if (clientSocketNumber != 1) {
+                    clientSocketIndex++;
+                    //Protection for upcoming loop client index
+                    //Set to 0 if maximum is reached
+                    clientSocketIndex = clientSocketIndex >= clientSocketNumber ? 0 : clientSocketIndex;
+                }
 
-                        //Protection for upcoming loop client index
-                        //Set to 0 if maximum is reached
-                        clientSocketIndex = clientSocketIndex >= clientSocketNumber ? 0 : clientSocketIndex;
-                    }
+                if (clientSocket != null && !clientSocket.isClosed()) {
+                    SocketMessage writeSocketMessage = new SocketMessage("Ball", guiFrame.getBallPosition());
+                    boolean sentMessage = sendSocketMessage(clientSocket, writeSocketMessage);
+                    LOGGER.info("To client : " + writeSocketMessage);
+                    if (sentMessage) {
+                        SocketMessage readSocketMessage = awaitSocketMessage(clientSocket);
+                        if (readSocketMessage == null)
+                            throw new RuntimeException("From client message is null ");
 
-                    if (client != null && !client.isClosed()) {
+                        inScope = true;
+                        emptyAttemptCounter = 0;
+                        guiFrame.setBallPosition(readSocketMessage);
 
-                        SocketMessage writeSocketMessage = new SocketMessage("Ball", guiFrame.getBallPosition());
-                        boolean sentMessage = sendSocketMessage(client, writeSocketMessage);
-                        LOGGER.info("To client : " + writeSocketMessage);
-                        if (sentMessage) {
-                            SocketMessage readSocketMessage = awaitSocketMessage(client);
-                            if (readSocketMessage == null)
-                                throw new RuntimeException("From client message is null ");
-
-                            inScope = true;
-                            guiFrame.setBallPosition(readSocketMessage);
-
-                        } else
-                            throw new RuntimeException("Message not sent to client " + client);
-                    }
+                    } else
+                        throw new RuntimeException("Message not sent to client " + clientSocket);
+                } else {
+                    emptyAttemptCounter++;
                 }
             }
+
+
+            if (emptyAttemptCounter >= emptyAttemptMax)
+                throw new RuntimeException("Consecutive empty attempts reached.Max " + emptyAttemptMax);
 
             try {
                 Thread.sleep(GlobalConfig.GUI_THREAD_SLEEP);
