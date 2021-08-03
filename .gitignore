@@ -1,3 +1,9 @@
 # Project exclude paths
 /target/
 *.idea/
+
+*/*.mvn
+*/src/main/**/target/
+*/src/test/**/target/
+*/src/main/**/build/
+*/src/test/**/build/
