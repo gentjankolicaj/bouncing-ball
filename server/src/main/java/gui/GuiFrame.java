@@ -1,6 +1,6 @@
 package gui;
 
-import server.SocketMessage;
+import message.SocketMessage;
 
 import javax.swing.*;
 import java.awt.*;

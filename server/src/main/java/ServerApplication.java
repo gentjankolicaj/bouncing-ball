@@ -1,6 +1,6 @@
 import config.GlobalConfig;
 import gui.GuiFrame;
-import server.ServerThread;
+import thread.ServerThread;
 
 public class ServerApplication {
 

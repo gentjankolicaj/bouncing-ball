@@ -32,9 +32,9 @@ public class ClientThread extends Thread {
             if (!receivedMessage) {
                 LOGGER.info("Waiting for socket message:");
 
-                //Waits till message is received from socket server
+                //Waits till message is received from socket thread
                 SocketMessage socketMessage = customSocketClient.awaitSocketMessage();
-                LOGGER.info("From server : " + socketMessage);
+                LOGGER.info("From thread : " + socketMessage);
 
                 //Set ball init position
                 guiFrame.setBallPosition(socketMessage);
@@ -47,14 +47,14 @@ public class ClientThread extends Thread {
                 guiFrame.repaintFrame();
                 if (!isMoved) {
 
-                    //Reset to start waiting for new message from server & not moved ball till then
+                    //Reset to start waiting for new message from thread & not moved ball till then
                     shapeInScope = false;
                     receivedMessage = false;
 
-                    //send last coordinate message to server
+                    //send last coordinate message to thread
                     SocketMessage socketMessage = new SocketMessage("Ball", guiFrame.getBallPosition());
                     boolean sentMessage = customSocketClient.sendSocketMessage(socketMessage);
-                    LOGGER.info("To server " + sentMessage + ", " + socketMessage);
+                    LOGGER.info("To thread " + sentMessage + ", " + socketMessage);
                 }
             }
 
@@ -92,19 +92,18 @@ public class ClientThread extends Thread {
             try {
                 //Loop till message is received
                 ObjectInputStream reader = new ObjectInputStream(socket.getInputStream());
-                while (true) {
-                    Object message = reader.readObject();
-                    if (message != null) {
-                        socketMessage = (SocketMessage) message;
-                        break;
-                    }
+                Object message;
+                LOGGER.info("Waiting for socket message");
+                while ((message = reader.readObject()) == null) {
+                    System.out.print(".");
                 }
+                socketMessage = (SocketMessage) message;
             } catch (IOException io) {
-                System.exit(0);
                 io.printStackTrace();
-            } catch (ClassNotFoundException ce) {
                 System.exit(0);
+            } catch (ClassNotFoundException ce) {
                 ce.printStackTrace();
+                System.exit(0);
             }
             return socketMessage;
         }
@@ -115,6 +114,9 @@ public class ClientThread extends Thread {
             try {
                 ObjectOutputStream writer = new ObjectOutputStream(socket.getOutputStream());
                 writer.writeObject(socketMessage);
+
+                //Flush forces bytes to be written
+                writer.flush();
                 sent = true;
             } catch (Exception e) {
                 e.printStackTrace();

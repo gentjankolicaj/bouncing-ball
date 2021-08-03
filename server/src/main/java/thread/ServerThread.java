@@ -1,7 +1,8 @@
-package server;
+package thread;
 
 import config.GlobalConfig;
 import gui.GuiFrame;
+import message.SocketMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +34,7 @@ public class ServerThread extends Thread {
 
     @Override
     public void run() {
-        //Start server socket & manage new incoming clients
+        //Start thread socket & manage new incoming clients
         startServer();
 
         //Start socket manager to manage new sockets
@@ -121,6 +122,8 @@ public class ServerThread extends Thread {
         try {
             ObjectOutputStream writer = new ObjectOutputStream(client.getOutputStream());
             writer.writeObject(socketMessage);
+            //Forces any buffered bytes to be written
+            writer.flush();
             sent = true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -133,13 +136,12 @@ public class ServerThread extends Thread {
         try {
             //Loop till message is received
             ObjectInputStream reader = new ObjectInputStream(client.getInputStream());
-            while (true) {
-                Object message = reader.readObject();
-                if (message != null) {
-                    socketMessage = (SocketMessage) message;
-                    break;
-                }
+            Object message;
+            LOGGER.info("Waiting for socket message");
+            while ((message = reader.readObject()) == null) {
+                System.out.print(".");
             }
+            socketMessage = (SocketMessage) message;
 
         } catch (IOException io) {
             io.printStackTrace();

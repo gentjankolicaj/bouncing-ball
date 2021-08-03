@@ -1,9 +1,9 @@
 package gui;
 
 
+import message.SocketMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import server.SocketMessage;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
