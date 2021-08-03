@@ -5,7 +5,8 @@ import gui.GuiFrame;
 public class ClientApplication {
 
     public static void main(String[] args) {
-        GuiFrame guiFrame = new GuiFrame("ClientGui", GlobalConfig.GUI_SIZE);
+        long pid = ProcessHandle.current().pid();
+        GuiFrame guiFrame = new GuiFrame("ClientGui-" + pid, GlobalConfig.GUI_SIZE);
 
         Thread clientThread = new ClientThread(guiFrame);
         clientThread.start();

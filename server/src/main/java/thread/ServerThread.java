@@ -48,6 +48,7 @@ public class ServerThread extends Thread {
 
         int emptyAttemptCounter = 0;
         int emptyAttemptMax = 100;
+        SocketMessage positionMessage = null;
 
         while (clientSocketNumber > 0) {
 
@@ -58,34 +59,45 @@ public class ServerThread extends Thread {
             }
             if (!inScope) {
                 clientSocket = socketClients.get(clientSocketIndex);
-                clientSocketNumber = socketClients.size();
-                if (clientSocketNumber != 1) {
-                    clientSocketIndex++;
-                    //Protection for upcoming loop client index
-                    //Set to 0 if maximum is reached
-                    clientSocketIndex = clientSocketIndex >= clientSocketNumber ? 0 : clientSocketIndex;
-                }
-
                 if (clientSocket != null && !clientSocket.isClosed()) {
-                    SocketMessage writeSocketMessage = new SocketMessage("Ball", guiFrame.getBallPosition());
-                    boolean sentMessage = sendSocketMessage(clientSocket, writeSocketMessage);
-                    LOGGER.info("To client : " + writeSocketMessage);
+                    if (positionMessage == null)
+                        positionMessage = new SocketMessage("Ball", guiFrame.getBallPosition());
+                    boolean sentMessage = sendSocketMessage(clientSocket, positionMessage);
+
+                    LOGGER.info("To client : " + positionMessage);
                     if (sentMessage) {
-                        SocketMessage readSocketMessage = awaitSocketMessage(clientSocket);
-                        if (readSocketMessage == null)
+                        positionMessage = awaitSocketMessage(clientSocket);
+                        if (positionMessage == null)
                             throw new RuntimeException("From client message is null ");
 
-                        inScope = true;
                         emptyAttemptCounter = 0;
-                        guiFrame.setBallPosition(readSocketMessage);
 
                     } else
                         throw new RuntimeException("Message not sent to client " + clientSocket);
-                } else {
+                } else
                     emptyAttemptCounter++;
+
+                //decisions for upcoming loop
+                clientSocketNumber = socketClients.size();
+                if (clientSocketNumber == 1) {
+                    //Set serverGui shape details for upcoming loop
+                    inScope = true;
+                    guiFrame.setBallPosition(positionMessage);
+                } else {
+                    clientSocketIndex++;
+
+                    //Protection for upcoming loop client index
+                    //Set to 0 if maximum is reached
+                    // inScope true=> shapes appears in serverGUI in upcoming thread
+                    if (clientSocketIndex >= clientSocketNumber) {
+                        clientSocketIndex = 0;
+
+                        //Set serverGui shape details
+                        inScope = true;
+                        guiFrame.setBallPosition(positionMessage);
+                    }
                 }
             }
-
 
             if (emptyAttemptCounter >= emptyAttemptMax)
                 throw new RuntimeException("Consecutive empty attempts reached.Max " + emptyAttemptMax);

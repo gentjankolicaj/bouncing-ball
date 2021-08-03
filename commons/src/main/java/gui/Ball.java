@@ -32,7 +32,7 @@ public class Ball {
     public Ball(Dimension frameDimension) {
         super();
         this.frameDimension = frameDimension;
-        this.RAND_INTERVAL = frameDimension.height / 50;
+        this.RAND_INTERVAL = frameDimension.height / 60;
         try {
             this.img = ImageIO.read(getClass().getClassLoader().getResourceAsStream("70.png"));
         } catch (IOException ioException) {
