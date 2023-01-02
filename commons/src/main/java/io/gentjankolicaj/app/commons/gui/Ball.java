@@ -1,7 +1,7 @@
-package gui;
+package io.gentjankolicaj.app.commons.gui;
 
 
-import message.SocketMessage;
+import io.gentjankolicaj.app.commons.message.SocketMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

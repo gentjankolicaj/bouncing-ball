@@ -1,4 +1,4 @@
-package message;
+package io.gentjankolicaj.app.commons.message;
 
 import java.io.Serializable;
 

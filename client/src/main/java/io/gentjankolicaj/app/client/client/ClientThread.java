@@ -1,18 +1,18 @@
-package client;
+package io.gentjankolicaj.app.client.client;
 
-import config.GlobalConfig;
-import gui.GuiFrame;
-import message.SocketMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.gentjankolicaj.app.client.config.GlobalConfig;
+import io.gentjankolicaj.app.commons.gui.GuiFrame;
+import io.gentjankolicaj.app.commons.message.SocketMessage;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+@Slf4j
 public class ClientThread extends Thread {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ClientThread.class);
+
 
     private final GuiFrame guiFrame;
 
@@ -27,49 +27,47 @@ public class ClientThread extends Thread {
         this.setName("MOTION-THREAD");
     }
 
+    @Override
     public void run() {
         customSocketClient.start();
         while (true) {
-            if (!receivedMessage) {
-                LOGGER.info("Waiting for socket message:");
-
-                //Waits till message is received from socket thread
-                SocketMessage socketMessage = customSocketClient.awaitSocketMessage();
-                LOGGER.info("From thread : " + socketMessage);
-
-                //Set ball init position
-                guiFrame.setBallPosition(socketMessage);
-                shapeInScope = true;
-                receivedMessage = true;
-            }
-
-            if (shapeInScope) {
-                boolean isMoved = guiFrame.moveBall();
-                guiFrame.repaintFrame();
-                if (!isMoved) {
-
-                    //Reset to start waiting for new message from thread & not moved ball till then
-                    shapeInScope = false;
-                    receivedMessage = false;
-
-                    //send last coordinate message to thread
-                    SocketMessage socketMessage = new SocketMessage("Ball", guiFrame.getBallPosition());
-                    boolean sentMessage = customSocketClient.sendSocketMessage(socketMessage);
-                    LOGGER.info("To thread " + sentMessage + ", " + socketMessage);
-                }
-            }
-
             try {
+                if (!receivedMessage) {
+                    log.info("Waiting for socket message:");
+
+                    //Waits till message is received from socket
+                    SocketMessage socketMessage = customSocketClient.awaitSocketMessage();
+                    log.info("From socket : " + socketMessage);
+
+                    //Set ball init position
+                    guiFrame.setBallPosition(socketMessage);
+                    shapeInScope = true;
+                    receivedMessage = true;
+                }
+
+                if (shapeInScope) {
+                    boolean isMoved = guiFrame.moveBall();
+                    guiFrame.repaintFrame();
+                    if (!isMoved) {
+
+                        //Reset to start waiting for new message from io.gentjankolicaj.app.thread & not moved ball till then
+                        shapeInScope = false;
+                        receivedMessage = false;
+
+                        //send last coordinate message to io.gentjankolicaj.app.thread
+                        SocketMessage socketMessage = new SocketMessage("Ball", guiFrame.getBallPosition());
+                        boolean sentMessage = customSocketClient.sendSocketMessage(socketMessage);
+                        log.info("To " + sentMessage + ", " + socketMessage);
+                    }
+                }
                 Thread.sleep(GlobalConfig.GUI_THREAD_SLEEP);
-            } catch (InterruptedException ie) {
-                ie.printStackTrace();
+            } catch (InterruptedException e) {
+                log.error("Error on running thread ", e);
             }
         }
-
-
     }
 
-    class CustomSocketClient {
+    static class CustomSocketClient {
         protected Socket socket;
 
         public CustomSocketClient() {
@@ -79,7 +77,7 @@ public class ClientThread extends Thread {
         public void start() {
             try {
                 socket = new Socket(GlobalConfig.HOSTNAME, GlobalConfig.PORT);
-                LOGGER.info("Connected : " + socket);
+                log.info("Connected : " + socket);
             } catch (Exception e) {
                 System.exit(0);
                 e.printStackTrace();
@@ -93,16 +91,13 @@ public class ClientThread extends Thread {
                 //Loop till message is received
                 ObjectInputStream reader = new ObjectInputStream(socket.getInputStream());
                 Object message;
-                LOGGER.info("Waiting for socket message");
+                log.info("Waiting for socket message");
                 while ((message = reader.readObject()) == null) {
-                    System.out.print(".");
+                    log.info(".");
                 }
                 socketMessage = (SocketMessage) message;
-            } catch (IOException io) {
-                io.printStackTrace();
-                System.exit(0);
-            } catch (ClassNotFoundException ce) {
-                ce.printStackTrace();
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
                 System.exit(0);
             }
             return socketMessage;
@@ -122,7 +117,6 @@ public class ClientThread extends Thread {
                 e.printStackTrace();
             }
             return sent;
-
         }
     }
 

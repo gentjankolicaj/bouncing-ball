@@ -1,16 +1,21 @@
-package util;
+package io.gentjankolicaj.app.commons.util;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-public class HostUtil {
+public class HostUtils {
+
+    private HostUtils() {
+    }
 
     public static String getHostname() {
         try {
             return InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException uhe) {
-            return "";
+            return StringUtils.EMPTY;
         }
     }
 

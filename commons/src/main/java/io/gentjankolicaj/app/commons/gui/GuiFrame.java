@@ -1,6 +1,6 @@
-package gui;
+package io.gentjankolicaj.app.commons.gui;
 
-import message.SocketMessage;
+import io.gentjankolicaj.app.commons.message.SocketMessage;
 
 import javax.swing.*;
 import java.awt.*;

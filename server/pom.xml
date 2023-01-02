@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>bouncing-ball</artifactId>
-        <groupId>org.bouncing</groupId>
+        <groupId>io.gentjankolicaj.app</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
@@ -20,41 +20,12 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>5.4.2</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.4.2</version>
-            <scope>test</scope>
-        </dependency>
-
-
-        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-simple -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>1.7.32</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.32</version>
-        </dependency>
-
 
         <dependency>
-            <groupId>org.bouncing</groupId>
+            <groupId>io.gentjankolicaj.app</groupId>
             <artifactId>commons</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
-
 
     </dependencies>
 
@@ -65,7 +36,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>ServerApplication</mainClass>
+                            <mainClass>io.gentjankolicaj.app.server.Application</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -81,7 +52,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>ServerApplication</mainClass>
+                            <mainClass>io.gentjankolicaj.app.server.Application</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

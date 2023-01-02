@@ -1,4 +1,4 @@
-package gui;
+package io.gentjankolicaj.app.commons.gui;
 
 public abstract class AbstractFrame {
 

@@ -1,8 +1,9 @@
-package thread;
+package io.gentjankolicaj.app.server.thread;
 
-import config.GlobalConfig;
-import gui.GuiFrame;
-import message.SocketMessage;
+import io.gentjankolicaj.app.commons.gui.GuiFrame;
+import io.gentjankolicaj.app.commons.message.SocketMessage;
+import io.gentjankolicaj.app.server.config.GlobalConfig;
+import io.gentjankolicaj.app.server.exception.ServerRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,16 +65,16 @@ public class ServerThread extends Thread {
                         positionMessage = new SocketMessage("Ball", guiFrame.getBallPosition());
                     boolean sentMessage = sendSocketMessage(clientSocket, positionMessage);
 
-                    LOGGER.info("To client : " + positionMessage);
+                    LOGGER.info("To client : {} ", positionMessage);
                     if (sentMessage) {
                         positionMessage = awaitSocketMessage(clientSocket);
                         if (positionMessage == null)
-                            throw new RuntimeException("From client message is null ");
+                            throw new ServerRuntimeException("From client message is null ");
 
                         emptyAttemptCounter = 0;
 
                     } else
-                        throw new RuntimeException("Message not sent to client " + clientSocket);
+                        throw new ServerRuntimeException("Message not sent to client " + clientSocket);
                 } else
                     emptyAttemptCounter++;
 
@@ -88,7 +89,7 @@ public class ServerThread extends Thread {
 
                     //Protection for upcoming loop client index
                     //Set to 0 if maximum is reached
-                    // inScope true=> shapes appears in serverGUI in upcoming thread
+                    // inScope true=> shapes appears in serverGUI in upcoming io.gentjankolicaj.app.thread
                     if (clientSocketIndex >= clientSocketNumber) {
                         clientSocketIndex = 0;
 
@@ -100,7 +101,7 @@ public class ServerThread extends Thread {
             }
 
             if (emptyAttemptCounter >= emptyAttemptMax)
-                throw new RuntimeException("Consecutive empty attempts reached.Max " + emptyAttemptMax);
+                throw new ServerRuntimeException("Consecutive empty attempts reached.Max " + emptyAttemptMax);
 
             try {
                 Thread.sleep(GlobalConfig.GUI_THREAD_SLEEP);
@@ -117,9 +118,9 @@ public class ServerThread extends Thread {
         try {
             serverSocket = new ServerSocket(GlobalConfig.PORT);
 
-            //Accept new socket client;
+            //Accept new socket client
             Socket client = serverSocket.accept();
-            LOGGER.info("INITIAL--> New socket : " + client);
+            LOGGER.info("INITIAL--> New socket : {} ", client);
 
             socketClients.add(client);
         } catch (Exception e) {
@@ -158,14 +159,12 @@ public class ServerThread extends Thread {
             Object message;
             LOGGER.info("Waiting for socket message");
             while ((message = reader.readObject()) == null) {
-                System.out.print(".");
+                LOGGER.info(".");
             }
             socketMessage = (SocketMessage) message;
 
-        } catch (IOException io) {
-            io.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+        } catch (IOException | ClassNotFoundException e) {
+            LOGGER.error("Awaiting socket error ", e);
         }
         return socketMessage;
 
@@ -173,28 +172,28 @@ public class ServerThread extends Thread {
 
 
     class SocketManager extends Thread {
-        private final Logger LOGGER = LoggerFactory.getLogger(SocketManager.class);
+        final Logger NESTED_LOGGER = LoggerFactory.getLogger(SocketManager.class);
 
         public SocketManager() {
             super();
             this.setName("SocketManager");
         }
 
+        @Override
         public void run() {
-            LOGGER.info("Started socket manager.");
+            NESTED_LOGGER.info("Started socket manager.");
             try {
                 //Set socket accept timeout
                 synchronized (serverSocket) {
                     serverSocket.setSoTimeout(GlobalConfig.SERVER_SOCKET_TIMEOUT);
-                    LOGGER.info("ServerSocket timeout set : " + GlobalConfig.SERVER_SOCKET_TIMEOUT);
+                    NESTED_LOGGER.info("ServerSocket timeout set : " + GlobalConfig.SERVER_SOCKET_TIMEOUT);
                 }
 
             } catch (SocketException e) {
-                e.printStackTrace();
+                NESTED_LOGGER.error("Socket error : ", e);
             }
 
             while (true) {
-
                 try {
                     //Synchronize of intrinsic lock
                     synchronized (serverSocket) {
@@ -212,18 +211,15 @@ public class ServerThread extends Thread {
                             }
                             //add new socket
                             socketClients.add(newSocket);
-                            LOGGER.info("CLIENT_MANAGER--> New socket " + newSocket);
+                            NESTED_LOGGER.info("CLIENT_MANAGER--> New socket {} ", newSocket);
                         }
                     }
-
                     //Sleep before try to get again intrinsic lock
                     Thread.sleep(GlobalConfig.SOCKET_MANAGER_THREAD_SLEEP);
                 } catch (SocketTimeoutException se) {
-                    LOGGER.error(se.getMessage());
-                } catch (InterruptedException ie) {
-                    LOGGER.error(ie.getMessage());
-                } catch (IOException io) {
-                    LOGGER.error(io.getMessage());
+                    NESTED_LOGGER.error(se.getMessage());
+                } catch (InterruptedException | IOException e) {
+                    NESTED_LOGGER.error(e.getMessage());
                 }
             }
         }
