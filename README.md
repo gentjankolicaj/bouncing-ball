@@ -1,6 +1,7 @@
-# Bouncing-ball is hobby project with gui ,where images are bouncing around.
+# Bouncing-ball
 
-Server-client architecture using socket & swing.
+- A gui where images are bouncing around.
+- Server-client architecture using socket & swing.
 
 # About images in project :
 
